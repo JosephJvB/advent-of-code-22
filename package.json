@@ -1,0 +1,15 @@
+{
+  "name": "advent-of-code-22",
+  "version": "1.0.0",
+  "description": "https://adventofcode.com/ https://www.reddit.com/r/adventofcode/",
+  "main": "index.js",
+  "scripts": {
+    "start": "node scripts/copyFiles.js && tsc && node dist/index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.11.10"
+  }
+}
