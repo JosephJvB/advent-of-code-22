@@ -1,11 +1,12 @@
 const fs = require('fs')
 
-const copyFiles = [
-  __dirname + '/../src/day-one/data.txt',
-  __dirname + '/../src/day-two/data.txt',
-]
+const dirs = fs.readdirSync(__dirname + '/../src/', { withFileTypes: true })
 
-for (const f of copyFiles) {
+for (const dir of dirs) {
+  if (!dir.isDirectory()) {
+    continue
+  }
+  const f = __dirname + '/../src/' + dir.name + '/data.txt'
   const out = f.replace('/src/', '/dist/')
   fs.copyFileSync(f, out)
 }
