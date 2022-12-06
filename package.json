@@ -4,7 +4,8 @@
   "description": "https://adventofcode.com/ https://www.reddit.com/r/adventofcode/",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node scripts/copyFiles.js && node dist/index"
+    "start": "tsc && node scripts/copyFiles.js && node dist/index",
+    "next": "node ./scripts/newDay.js"
   },
   "keywords": [],
   "author": "",
