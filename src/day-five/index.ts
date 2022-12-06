@@ -9,11 +9,11 @@ export default () => {
   const crateStacks: string[][] = []
   for (let i = 0; i < parser.idxLine.length; i++) {
     const idxChar = parser.idxLine[i]
-    if (isNaN(Number(idxChar))) {
+    if (!idxChar.trim()) { // skip whitespace
       continue
     }
     crateStacks.push([])
-    const stackIdx = crateStacks.length - 1
+    const stackIdx = Number(idxChar) - 1
     for (const line of parser.crateLines) {
       const crateChar = line[i]
       const trim = crateChar.trim()
