@@ -1,14 +1,37 @@
 const fs = require('fs')
 
-const nextDay = process.argv.slice(2)[0].trim()
-if (!nextDay) {
-  return
-}
+const days = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty',
+  'twentyone',
+  'twentytwo',
+]
+
+const soFar = fs.readdirSync(`${__dirname}/../src/`)
+const nextDay = days[soFar.length - 1]
+
 const dir = `${__dirname}/../src/day-${nextDay}/`
 if (fs.existsSync(dir)) {
   return
 }
-console.log('newDay', nextDay)
 fs.mkdirSync(dir)
 fs.writeFileSync(dir + 'index.ts', '')
 fs.writeFileSync(dir + 'data.txt', '')
