@@ -6,5 +6,6 @@ import dayFive from './day-five'
 import daySix from './day-six'
 import daySeven from './day-seven'
 import dayEight from './day-eight'
+import dayNine from './day-nine'
 
-dayEight()
+dayNine()
