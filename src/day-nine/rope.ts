@@ -7,22 +7,12 @@ export interface ICoord {
 export interface IMovable extends ICoord {
   get coordStr(): string
   char: string
-  lastPosition: ICoord
 }
 
 export class Head implements IMovable {
   char: string = 'H'
-  lastPosition: ICoord = {
-    x: 0,
-    y: 0
-  }
-  constructor(public x: number, public y: number) {
-    this.lastPosition.x = x
-    this.lastPosition.y = y
-  }
+  constructor(public x: number, public y: number) {}
   moveByOne(direction: direction) {
-    this.lastPosition.x = this.x
-    this.lastPosition.y = this.y
     switch (direction) {
       case 'U':
         this.y--
@@ -44,27 +34,26 @@ export class Head implements IMovable {
 }
 
 export class Knot implements IMovable {
-  lastPosition: ICoord = {
-    x: 0,
-    y: 0,
-  }
-  constructor(public char: string, public x: number, public y: number) {
-    this.lastPosition.x = x
-    this.lastPosition.y = y
-  }
+  constructor(public char: string, public x: number, public y: number) {}
   get coordStr(): string {
     return `${this.x}x${this.y}`
   }
   follow(h: IMovable) {
-    this.lastPosition.x = this.x
-    this.lastPosition.y = this.y
     const xDiff = Math.abs(h.x - this.x)
     const yDiff = Math.abs(h.y - this.y)
     const totalDiff = xDiff + yDiff
     // handle corner
     if (totalDiff > 2) {
-      this.x = h.lastPosition.x
-      this.y = h.lastPosition.y
+      // this.x = h.lastPosition.x
+      // this.y = h.lastPosition.y
+      this.followX(h)
+      this.followY(h)
+      if (xDiff > yDiff) {
+        this.followY(h)
+      }
+      else if (xDiff < yDiff) {
+        this.followX(h)
+      }
     }
     else if (xDiff > 1) {
       this.followX(h)
