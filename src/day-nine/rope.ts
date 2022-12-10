@@ -1,18 +1,28 @@
 import { direction } from './parser'
 
-export interface IMovable {
+export interface ICoord {
   x: number
   y: number
-  lastDirection: direction
+}
+export interface IMovable extends ICoord {
+  get coordStr(): string
+  char: string
+  lastPosition: ICoord
 }
 
 export class Head implements IMovable {
-  // public x: number = 0
-  // public y: number = 0
-  lastDirection: direction
-  constructor(public x: number, public y: number) {}
+  char: string = 'H'
+  lastPosition: ICoord = {
+    x: 0,
+    y: 0
+  }
+  constructor(public x: number, public y: number) {
+    this.lastPosition.x = x
+    this.lastPosition.y = y
+  }
   moveByOne(direction: direction) {
-    this.lastDirection = direction
+    this.lastPosition.x = this.x
+    this.lastPosition.y = this.y
     switch (direction) {
       case 'U':
         this.y--
@@ -28,25 +38,33 @@ export class Head implements IMovable {
         break
     }
   }
+  get coordStr(): string {
+    return `${this.x}x${this.y}`
+  }
 }
 
-export class Tail implements IMovable {
-  // public x: number = 0
-  // public y: number = 0
-  lastDirection: direction
-  constructor(public x: number, public y: number) {}
+export class Knot implements IMovable {
+  lastPosition: ICoord = {
+    x: 0,
+    y: 0,
+  }
+  constructor(public char: string, public x: number, public y: number) {
+    this.lastPosition.x = x
+    this.lastPosition.y = y
+  }
   get coordStr(): string {
     return `${this.x}x${this.y}`
   }
   follow(h: IMovable) {
-    this.lastDirection = h.lastDirection
+    this.lastPosition.x = this.x
+    this.lastPosition.y = this.y
     const xDiff = Math.abs(h.x - this.x)
     const yDiff = Math.abs(h.y - this.y)
-    // move diag
-    if (xDiff > 1 && yDiff == 1 || xDiff == 1 && yDiff > 1) {
-      this.followX(h)
-      this.followY(h)
-      this.handleSnap(h)
+    const totalDiff = xDiff + yDiff
+    // handle corner
+    if (totalDiff > 2) {
+      this.x = h.lastPosition.x
+      this.y = h.lastPosition.y
     }
     else if (xDiff > 1) {
       this.followX(h)
@@ -56,18 +74,6 @@ export class Tail implements IMovable {
     }
     else {
       // no move
-    }
-  }
-  private handleSnap(h: IMovable) {
-    switch (h.lastDirection) {
-      case 'U':
-      case 'D':
-        this.followX(h)
-        break
-      case 'R':
-      case 'L':
-        this.followY(h)
-        break
     }
   }
   // these need if/elseif in case x/y has already been corrected
@@ -86,3 +92,10 @@ export class Tail implements IMovable {
     }
   }
 }
+export class Tail extends Knot {
+  constructor(public x: number, public y: number) {
+    super('T', x, y)
+  } 
+}
+
+// belsize park rita ora
