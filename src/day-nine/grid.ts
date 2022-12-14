@@ -27,7 +27,7 @@ export default class Grid {
     for (let s = 0; s < step.count; s++) {
       let last: IMovable = null
       for (let knot of rope) {
-        grid[knot.y][knot.x] = '.'
+        // grid[knot.y][knot.x] = '.'
         if (last) {
           const k = knot as Knot
           k.follow(last)
@@ -35,21 +35,24 @@ export default class Grid {
           const h = knot as Head
           h.moveByOne(step.direction)
         }
-        grid[knot.y][knot.x] = knot.char
+        // grid[knot.y][knot.x] = knot.char
         last = knot
       }
       this.saveTail(last)
-      this.saveSnapshot()
     }
+    // this.saveSnapshot()
   }
   saveSnapshot() {
+    let s = grid[this.startPos.y][this.startPos.x]
+    grid[this.startPos.y][this.startPos.x] = 'S'
     const rows = grid.map(r => r.join('')).join('\n')
     snapshots.push(rows)
     snapshots.push('')
+    grid[this.startPos.y][this.startPos.x] = s
   }
   saveTail(t: IMovable) {
     this.tailCoords[t.coordStr] = true
-    tailGrid[t.y][t.x] = 'T'
+    // tailGrid[t.y][t.x] = 'T'
   }
   get tailPositionCount(): number {
     return Object.keys(this.tailCoords).length

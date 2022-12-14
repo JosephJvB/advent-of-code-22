@@ -39,23 +39,17 @@ export class Knot implements IMovable {
     return `${this.x}x${this.y}`
   }
   follow(h: IMovable) {
-    const xDiff = Math.abs(h.x - this.x)
-    const yDiff = Math.abs(h.y - this.y)
+    let xDiff = Math.abs(h.x - this.x)
+    let yDiff = Math.abs(h.y - this.y)
     const totalDiff = xDiff + yDiff
     // handle corner
     if (totalDiff > 2) {
-      // this.x = h.lastPosition.x
-      // this.y = h.lastPosition.y
       this.followX(h)
       this.followY(h)
-      if (xDiff > yDiff) {
-        this.followY(h)
-      }
-      else if (xDiff < yDiff) {
-        this.followX(h)
-      }
+      xDiff = Math.abs(h.x - this.x)
+      yDiff = Math.abs(h.y - this.y)
     }
-    else if (xDiff > 1) {
+    if (xDiff > 1) {
       this.followX(h)
     }
     else if (yDiff > 1) {

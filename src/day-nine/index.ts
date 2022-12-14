@@ -3,7 +3,7 @@ import Grid from './grid'
 import RopeParser from './parser'
 import { Head, IMovable, Knot, Tail } from './rope'
 
-const KNOT_COUNT = 5
+const KNOT_COUNT = 8
 const GRID_SIZE = 26
 
 // not cornering properly
@@ -37,6 +37,7 @@ export default () => {
 // incorrect
 // 2837 - too high
 // 2816 - dunno
+// 2678 - correct!
 
 // solution
 // ..........................
