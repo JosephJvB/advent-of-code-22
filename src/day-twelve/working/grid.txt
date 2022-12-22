@@ -1,0 +1,5 @@
+>,a,b,q,p,o,n,m
+a,<,c,r,y,x,x,l
+a,c,v,s,z,E,x,k
+a,c,c,v,u,v,w,j
+a,b,d,e,>,g,h,i
