@@ -1,34 +1,34 @@
-export type Coord = {
-  x: number
-  y: number
-}
-export type GridCoord = Coord & {
-  e: number
-}
+import GridCoord from './coord'
+
 export type Direction = '^' | 'v' | '>' | '<'
 
 export default class Move {
-  public prev: Coord
-  public next: Coord
+  public prev: GridCoord
+  public next: GridCoord = null
   public key: string
   public char: string
-  constructor (public c: Coord, public d: Direction) {
-    this.prev = { ...c }
-    this.next = { ...c }
-    this.key = `${c.x}x${c.y}`
+  constructor (g: GridCoord[][], c: GridCoord, public d: Direction) {
+    this.prev = c
+    let x = c.x
+    let y = c.y
     switch (d) {
       case '<':
-        this.next.x--
+        x--
         break
       case '>':
-        this.next.x++
+        x++
         break
       case '^':
-        this.next.y--
+        y--
         break
       case 'v':
-        this.next.y++
+        y++
         break
+    }
+    // not all moves are valid
+    if (g[y] && g[y][x]) {
+      this.next = g[y][x]
+      this.key = this.next.key
     }
   }
 }
