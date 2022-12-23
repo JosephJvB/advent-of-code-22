@@ -1,16 +1,5 @@
 import fs from 'fs'
-
-export type Coord = {
-  x: number
-  y: number
-}
-export type GridCoord = Coord & {
-  e: number
-}
-export type Direction = '^' | 'v' | '>' | '<'
-export type Move = Coord & {
-  d: Direction
-}
+import Move, { Direction, GridCoord } from './move'
 
 export default class Solver {
   public grid: GridCoord[][] = []
@@ -52,24 +41,23 @@ export default class Solver {
     return this.current.x == this.end.x && this.current.y == this.end.y
   }
   private get nextMoves(): Move[] {
-    const moves: Move[] = [
-      { x: this.current.x + 1, y: this.current.y, d: '>' },
-      { x: this.current.x - 1, y: this.current.y, d: '<' },
-      { x: this.current.x, y: this.current.y + 1, d: 'v' },
-      { x: this.current.x, y: this.current.y - 1, d: '^' },
+    const possibleMoves: Move[] = [
+      new Move(this.current, '>'),
+      new Move(this.current, '<'),
+      new Move(this.current, 'v'),
+      new Move(this.current, '^'),
     ]
     const validMoves: Move[] = []
-    for (const m of moves) {
-      const r = this.grid[m.y]
+    for (const m of possibleMoves) {
+      const r = this.grid[m.next.y]
       if (!r) {
         continue
       }
-      const c = r[m.x]
+      const c = r[m.next.x]
       if (!c) {
         continue
       }
-      const k = `${m.x}_${m.y}`
-      if (this.prevCells[k]) {
+      if (this.prevCells[m.key]) {
         continue
       }
       if (c.e > this.current.e + 1) {
@@ -78,10 +66,10 @@ export default class Solver {
       validMoves.push(m)
     }
     validMoves.sort((a, z) => {
-      const aDiffX = Math.abs(this.end.x - a.x)
-      const aDiffY = Math.abs(this.end.y - a.y)
-      const zDiffX = Math.abs(this.end.x - z.x)
-      const zDiffY = Math.abs(this.end.y - z.y)
+      const aDiffX = Math.abs(this.end.x - a.next.x)
+      const aDiffY = Math.abs(this.end.y - a.next.y)
+      const zDiffX = Math.abs(this.end.x - z.next.x)
+      const zDiffY = Math.abs(this.end.y - z.next.y)
       return (aDiffX - zDiffX) || (aDiffY - zDiffY)
     })
     return validMoves
@@ -93,8 +81,7 @@ export default class Solver {
     const moves = this.nextMoves
     for (const m of moves) {
       // save in closure
-      const _current = { ...this.current }
-      const currentChar = this.inputGrid[this.current.y][this.current.x]
+      m.char = this.inputGrid[m.prev.y][m.prev.x]
       // update w/ next
       this.nextMove(m)
       // if (this.solution.length == 32) {
@@ -113,27 +100,27 @@ export default class Solver {
         return true
       }
       // failed, reset
-      this.resetMove(currentChar, _current)
+      this.resetMove(m)
     }
     return false
   }
   nextMove(m: Move) {
-    const k = `${m.x}_${m.y}`
-    this.prevCells[k] = true
-    const nextCell = this.grid[m.y][m.x]
-    if (this.solution.length > 0) {
-      this.inputGrid[this.current.y][this.current.x] = m.d
-      this.numberGrid[this.current.y][this.current.x] = m.d
+    this.prevCells[m.key] = true
+    if (m.char != 'S' && m.char != 'E') {
+      this.inputGrid[m.prev.y][m.prev.x] = m.d
+      this.numberGrid[m.prev.y][m.prev.x] = m.d
     }
+    const nextCell = this.grid[m.next.y][m.next.x]
     this.current = { ...nextCell }
     this.solution.push(m.d)
   }
-  resetMove(prevChar: string, _current: GridCoord) {
-    const k = `${this.current.x}_${this.current.y}`
-    delete this.prevCells[k]
-    this.inputGrid[_current.y][_current.y] = prevChar
-    this.numberGrid[_current.y][_current.y] = prevChar
-    this.current = { ..._current }
+  resetMove(m: Move) {
+    delete this.prevCells[m.key]
+    this.inputGrid[m.prev.y][m.prev.x] = m.char
+    this.numberGrid[m.prev.y][m.prev.x] = m.char
+
+    const prevCell = this.grid[m.prev.y][m.prev.x]
+    this.current = { ...prevCell }
     this.solution.pop()
   }
 }
