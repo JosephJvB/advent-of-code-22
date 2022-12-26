@@ -1,8 +1,11 @@
+import DjikstraSolver from './dijkstras-solver'
 import parser from './parser'
-import Solver from './solver'
+import RecursiveSolver from './recursive-solver'
 
 export default async () => {
   const parsedGrid = parser()
-  const solver = new Solver(parsedGrid)
-  solver.solveRecursive()
+  // const solver = new RecursiveSolver(parsedGrid)
+  // solver.solveRecursive()
+  const solver = new DjikstraSolver(parsedGrid)
+  solver.solve()
 }

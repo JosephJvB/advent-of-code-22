@@ -2,7 +2,7 @@ import fs from 'fs'
 import GridCoord from './coord'
 import Move, { Direction } from './move'
 
-export default class Solver {
+export default class RecursiveSolver {
   public grid: GridCoord[][] = []
   public start: GridCoord
   public end: GridCoord
