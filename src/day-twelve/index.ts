@@ -7,5 +7,6 @@ export default async () => {
   // const solver = new RecursiveSolver(parsedGrid)
   // solver.solveRecursive()
   const solver = new DjikstraSolver(parsedGrid)
-  solver.solve()
+  // solver.solveV1()
+  solver.solveV2()
 }

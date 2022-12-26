@@ -20,6 +20,7 @@ export default class DjikstraSolver {
   private visited: {
     [key: string]: boolean
   } = {}
+  private startPoints: Coord[] = []
   constructor(inputGrid: string[][]) {
     for (let y = 0; y < inputGrid.length; y++) {
       const row: number[] = []
@@ -35,6 +36,9 @@ export default class DjikstraSolver {
             e = 26
             this.end = new Coord(x, y)
             break
+        }
+        if (e == 1) {
+          this.startPoints.push(new Coord(x, y))
         }
         row.push(e)
       }
@@ -65,7 +69,7 @@ export default class DjikstraSolver {
     const toVal = this.grid[to.y][to.x]
     return toVal <= nextLimit
   }
-  solve() {
+  solveV1() {
     const steps: Step[] = [new Step(this.start, 0)]
     this.visited[this.start.key] = true
     while (steps.length > 0) {
@@ -73,10 +77,6 @@ export default class DjikstraSolver {
       if (currentPos.key == this.end.key) {
         console.log('reached end @', currentPos)
         return
-      }
-      if (currentPos.count == 2) {
-        const stepList = steps.map(s => `${s.count} ${s.key}`).join(', ')
-        console.log(stepList)
       }
       for (const n of this.neighbours(currentPos)) {
         if (!this.canStepTo(currentPos, n)) {
@@ -86,6 +86,50 @@ export default class DjikstraSolver {
         steps.push(new Step(n, currentPos.count + 1))
       }
     }
-    console.log('no more valid steps, reached the end')
+    console.log('no more valid steps, & did not reach the end')
+  }
+  solveV2() {
+    let fastestStart: Coord = null
+    let fastestFinish: Step = null
+    let checked = 0
+    console.log('checking', this.startPoints.length, 'starts')
+    for (const start of this.startPoints) {
+      const toBeat = fastestFinish?.count || 370
+      // console.log('checking start', ++checked)
+      const currentFinish = this.solveFrom(start, toBeat)
+      if (!currentFinish) {
+        continue
+      }
+      if (!fastestFinish || fastestFinish.count > currentFinish.count) {
+        fastestFinish = currentFinish
+        fastestStart = start
+      }
+    }
+    console.log('fastest start', fastestStart, 'finished in', fastestFinish.count, 'steps')
+  }
+  private solveFrom(start: Coord, stepLimit: number): Step {
+    this.visited = {}
+    const steps: Step[] = [new Step(start, 0)]
+    this.visited[start.key] = true
+    while (steps.length > 0) {
+      const currentPos = steps.shift()
+      // dont check all the way to the end if we are already past the lowest current checked step count
+      if (currentPos.count > stepLimit) {
+        return null
+      }
+      if (currentPos.key == this.end.key) {
+        // console.log('reached end @', currentPos)
+        return currentPos
+      }
+      for (const n of this.neighbours(currentPos)) {
+        if (!this.canStepTo(currentPos, n)) {
+          continue
+        }
+        this.visited[n.key] = true
+        steps.push(new Step(n, currentPos.count + 1))
+      }
+    }
+    // console.log('no more valid steps, & did not reach the end')
+    return null
   }
 }
