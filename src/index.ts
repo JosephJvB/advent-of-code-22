@@ -10,5 +10,6 @@ import dayNine from './day-nine'
 import dayTen from './day-ten'
 import dayEleven from './day-eleven'
 import dayTwelve from './day-twelve'
+import dayThirteen from './day-thirteen'
 
-dayTwelve()
+dayThirteen()

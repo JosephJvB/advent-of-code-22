@@ -54,7 +54,6 @@ export default class DjikstraSolver {
     ]
   }
   canStepTo(from: Coord, to: Coord) {
-    const nextLimit = this.grid[from.y][from.x] + 1
     // must exist on grid
     if (!this.grid[to.y]) {
       return false
@@ -67,6 +66,7 @@ export default class DjikstraSolver {
       return false
     }
     const toVal = this.grid[to.y][to.x]
+    const nextLimit = this.grid[from.y][from.x] + 1
     return toVal <= nextLimit
   }
   solveV1() {
@@ -91,7 +91,7 @@ export default class DjikstraSolver {
   solveV2() {
     let fastestStart: Coord = null
     let fastestFinish: Step = null
-    let checked = 0
+    // let checked = 0
     console.log('checking', this.startPoints.length, 'starts')
     for (const start of this.startPoints) {
       const toBeat = fastestFinish?.count || 370
