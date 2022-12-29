@@ -1,6 +1,6 @@
 import Pair, { packetItem } from './pair'
 
-export enum CompareResult {
+export enum evalResult {
   success,
   fail,
   empty,
@@ -8,76 +8,71 @@ export enum CompareResult {
 
 export default class Comparer {
   constructor() {}
-  public evalPair(p: Pair): number {
-    let c = 0
-    let result: CompareResult = CompareResult.empty
-    while (result == CompareResult.empty) {
-      let l = p.l[c]
-      let r = p.r[c]
-      if (l == undefined && r == undefined) {
-        break
-      }
-      result = this.evalNextItems(l, r)
-      c++
-    }
+  public scorePair(p: Pair, idx: number) {
+    const result = this.evalRecursive(p)
     switch (result) {
-      case CompareResult.empty:
-        console.error('empty result for pair', p)
-        process.exit()
-      case CompareResult.success:
-        return p.idx
-      case CompareResult.fail:
+      case evalResult.success:
+        return idx
+      case evalResult.fail:
         return 0
+      case evalResult.empty:
+        console.error('failed to eval pair', p)
+        process.exit()
     }
   }
-  private evalNextItems(l: packetItem, r: packetItem): CompareResult {
-    const both: packetItem[] = []
-    let intCount = 0
-    let listCount = 0
-    for (const p of [l, r]) {
-      if (p != undefined) {
-        both.push(p)
+  private evalRecursive(p: Pair): evalResult {
+    const max = Math.max(p.l.length, p.r.length)
+    let result: evalResult = evalResult.empty
+    for (let i = 0; i < max; i++) {
+      let l = p.l[i]
+      let r = p.r[i]
+      const both = [l, r]
+      let intCount = 0
+      let listCount = 0
+      for (const p of both) {
+        if (p == undefined) {
+          continue
+        }
         if (p instanceof Array) {
           listCount++
         }
-        if (p instanceof Number) {
+        if (!isNaN(Number(p))) {
           intCount++
         }
       }
-    }
-    if (both.length == 1) {
-        return r == undefined ? CompareResult.fail : CompareResult.success
-    }
-    if (intCount == 2) {
-      if (l == r) { // check next
-        return CompareResult.empty
-      } else {
-        return l > r ? CompareResult.fail : CompareResult.success
+      // one list is empty
+      if (intCount + listCount == 1) {
+        return r == undefined ? evalResult.fail : evalResult.success
+      }
+      // both ints
+      if (intCount == 2) {
+        if (l != r) {
+          return l > r ? evalResult.fail : evalResult.success
+        } else { // check next
+          continue
+        }
+      }
+      // eval both as lists
+      if (intCount == 1 && listCount == 1) {
+        const [l2, r2] = this.normalize(both)
+        l = l2
+        r = r2
+      }
+      // eval both as lists - recurse
+      result = this.evalRecursive(new Pair(l as packetItem[], r as packetItem[]))
+      if (result != evalResult.empty) {
+        return result
       }
     }
-    else if (listCount == 2) {
-      this.evalNextItems((l as packetItem[])[0], (r as packetItem[])[0])
-    }
-    else if (intCount == 1 && listCount == 1) {
-      const [l2, r2] = this.normalize(both)
-      this.evalNextItems((l2 as packetItem[])[0], (r2 as packetItem[])[0])
-    }
-    else {
-      console.error(
-        `both.length=${both.length}`,
-        `intCount=${intCount}`,
-        `listCount=${listCount}`,
-      )
-      console.error('Unexpected case: exit')
-      process.exit()
-    }
+    // looped all items, no result.
+    return evalResult.empty
   }
-  private normalize(packets: packetItem[]) {
+  private normalize(packets: packetItem[]): packetItem[][] {
     return packets.map(p => {
-      if (p instanceof Number) {
-        return [p]
+      if (p instanceof Array) {
+        return p
       }
-      return p
+      return p == undefined ? [] : [p]
     })
   }
 }
