@@ -20,7 +20,7 @@ export default class Comparer {
         process.exit()
     }
   }
-  private evalRecursive(p: Pair): evalResult {
+  public evalRecursive(p: Pair): evalResult {
     const max = Math.max(p.l.length, p.r.length)
     let result: evalResult = evalResult.empty
     for (let i = 0; i < max; i++) {
@@ -36,7 +36,7 @@ export default class Comparer {
         if (p instanceof Array) {
           listCount++
         }
-        if (!isNaN(Number(p))) {
+        if (typeof p == 'number') {
           intCount++
         }
       }
@@ -72,6 +72,8 @@ export default class Comparer {
       if (p instanceof Array) {
         return p
       }
+      // return [p]
+      // i needed this at one point. Not sure if that's required anymore since probably I fixed that bug.
       return p == undefined ? [] : [p]
     })
   }
