@@ -21,4 +21,4 @@ export default () => {
   console.log('cave sim ended with', cave.sandCount, 'sandCount')
 }
 
-// 30158 - too high
+// 30158 - too high - oops I added last bit of sand twice

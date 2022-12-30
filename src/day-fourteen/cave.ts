@@ -13,7 +13,7 @@ export default class Cave {
   constructor() {
     const lines = fs.readFileSync(__dirname + '/data.txt', 'utf8').toString().split('\n')
     const rocks: Rock[] = []
-    // track to make grid only
+    // track to make grid
     let xMax = -1
     let yMax = -1
     for (const line of lines) {
@@ -30,7 +30,7 @@ export default class Cave {
       }
       rocks.push(rock)
     }
-    // will sort low to high
+    // make grid
     for (let y = 0; y <= yMax + 20; y++) {
       const row: string[] = []
       for (let x = 0; x <= xMax + X_BUFFER; x++) {
@@ -38,6 +38,7 @@ export default class Cave {
       }
       this.grid.push(row)
     }
+    // add rocks
     for (let r = 0; r < rocks.length; r++) {
       const rock = rocks[r]
       for (let i = 0; i < rock.length - 1; i++) {
@@ -66,6 +67,7 @@ export default class Cave {
   addSand() {
     if (this.grid[0][500] == 'o') {
       this.runSim = false
+      return
     }
     let x = 500 // always starts from single point of origin (500, 0)
     for (let y = 0; y < this.grid.length - 1; y++) {
@@ -94,5 +96,6 @@ export default class Cave {
     }
     // sand fell to the void
     this.runSim = false
+    return
   }
 }
