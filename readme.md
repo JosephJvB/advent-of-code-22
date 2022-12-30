@@ -12,3 +12,4 @@ Number([1, 1]) == undefined
 !isNaN(Number([])) == true
 // in this case, we will think an empty list, is a number!!! Very cool javascript
 ```
+I guess what I learned is to use parseInt / typeof == 'number'
