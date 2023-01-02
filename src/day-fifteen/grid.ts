@@ -17,10 +17,16 @@ const getCoord = (s: string): Coord => {
 }
 
 export default class Grid {
-  public grid: string[][] = []
+  private grid: string[][] = []
   public sensors: Sensor[] = []
   public max: Coord = { x: 0, y: 0 }
   public min: Coord = { x: Infinity, y: Infinity }
+  public sensorCoords: {
+    [coord: string]: boolean
+  } = {}
+  public beaconCoords: {
+    [coord: string]: boolean
+  } = {}
   constructor() {
     const lines = fs.readFileSync(__dirname + '/data.txt', 'utf8').toString().split('\n')
     const beacons: Coord[] = []
@@ -29,27 +35,35 @@ export default class Grid {
       const beaconStr = l.split('beacon is at ')[1].split(':')[0]
       const sc = getCoord(sensorStr)
       const bc = getCoord(beaconStr)
-      this.sensors.push({
+      const s = {
         ...sc,
         beaconDistance: manhatDist(sc, bc)
-      })
-      beacons.push(bc)
-      for (const c of [sc, bc]) {
-        if (c.x > this.max.x) this.max.x = c.x
-        if (c.y > this.max.y) this.max.y = c.y
-        if (c.x < this.min.x) this.min.x = c.x
-        if (c.y < this.min.y) this.min.y = c.y
       }
+      this.sensors.push(s)
+      beacons.push(bc)
+      if (bc.x < this.min.x) this.min.x = bc.x
+      if (bc.x > this.max.x) this.max.x = bc.x
+      if (bc.y < this.min.y) this.min.y = bc.y
+      if (bc.y > this.max.y) this.max.y = bc.y
+      // draw grid to include all sensor ranges
+      if ((s.x - s.beaconDistance) < this.min.x) this.min.x = (s.x - s.beaconDistance)
+      if ((s.x + s.beaconDistance) > this.max.x) this.max.x = (s.x + s.beaconDistance)
+      if ((s.y - s.beaconDistance) < this.min.y) this.min.y = (s.y - s.beaconDistance)
+      if ((s.y + s.beaconDistance) > this.max.y) this.max.y = (s.y + s.beaconDistance)
     }
     for (const s of this.sensors) {
       // adjust min values
       s.x -= this.min.x
       s.y -= this.min.y
+      const c = `${s.x}x${s.y}`
+      this.sensorCoords[c] = true
     }
     for (const b of beacons) {
       // adjust min values
       b.x -= this.min.x
       b.y -= this.min.y
+      const c = `${b.x}x${b.y}`
+      this.beaconCoords[c] = true
     }
     this.drawGrid(beacons)
     // for each sensor add impossible coords
