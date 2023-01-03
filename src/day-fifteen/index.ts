@@ -62,6 +62,8 @@ export default () => {
   // part 2
   // loop cells around (perimeter + 1) of all sensors & within range 0-4,000,000
   // if any cell is not within range of any other sensor, it's the distress one
+  // another solution from the reddit thread:
+  // find a pair of sensors with manhattenDistance diff = 1?
   const MIN = 0
   const MAX = 4000000
   const MIN_X = MIN - g.min.x
