@@ -1,6 +1,6 @@
 import { Coord } from '../day-fourteen'
-import Grid from './grid'
-import { manhatDist } from './util'
+import Grid, { Sensor } from './grid'
+import { getPerimeterCoords, manhatDist } from './util'
 
 const Y = 2000000
 // const Y = 10
@@ -11,24 +11,24 @@ export default () => {
   const coords: Coord[] = []
   const y = Y - g.min.y
   // find new way to calc not using computed 2d array
-  console.log('min,max', g.min, g.max)
-  console.log('checking', g.max.x - g.min.x, 'cells in row', y)
-  for (let x = 0; x <= (g.max.x - g.min.x); x++) {
-    const c: Coord = { x, y }
-    const k = `${x}x${y}`
-    // cant have hidden beacon on existing beacon or sensor
-    if (g.sensorCoords[k] || g.beaconCoords[k]) {
-      continue
-    }
-    const insideExistingSensorRange = g.sensors.find(s => {
-      const d = manhatDist(s, c)
-      return d <= s.beaconDistance
-    })
-    if (insideExistingSensorRange) {
-      impossibleBeacons++
-      coords.push(c)
-    }
-  }
+  // console.log('min,max', g.min, g.max)
+  // console.log('checking', g.max.x - g.min.x, 'cells in row', y)
+  // for (let x = 0; x <= (g.max.x - g.min.x); x++) {
+  //   const c: Coord = { x, y }
+  //   const k = `${x}x${y}`
+  //   // cant have hidden beacon on existing beacon or sensor
+  //   if (g.sensorCoords[k] || g.beaconCoords[k]) {
+  //     continue
+  //   }
+  //   const insideExistingSensorRange = g.sensors.find(s => {
+  //     const d = manhatDist(s, c)
+  //     return d <= s.beaconDistance
+  //   })
+  //   if (insideExistingSensorRange) {
+  //     impossibleBeacons++
+  //     coords.push(c)
+  //   }
+  // }
   // console.log('impossibleBeacons', impossibleBeacons)
   // attempt2: reddit.com
   // this one is better, since it checks many many fewer cells. But it's not my solution :)
@@ -58,7 +58,55 @@ export default () => {
   //     }
   //   }
   // }
-  console.log('impossibleBeacons', impossibleBeacons)
+  // console.log('impossibleBeacons', impossibleBeacons)
+  // part 2
+  // loop cells around (perimeter + 1) of all sensors & within range 0-4,000,000
+  // if any cell is not within range of any other sensor, it's the distress one
+  const MIN = 0
+  const MAX = 4000000
+  const MIN_X = MIN - g.min.x
+  const MAX_X = MAX - g.min.x
+  const MIN_Y = MIN - g.min.y
+  const MAX_Y = MAX - g.min.y
+  console.log('x min,max', MIN_X, MAX_X)
+  console.log('y min, max', MIN_Y, MAX_Y)
+  console.log('sensors.length', g.sensors.length)
+  // for all sensors
+  // loop all perim coords
+  // if any perim coord not in range of another sensor
+  // that coord is distress
+  for (let i = 0; i < g.sensors.length; i++) {
+    const s = g.sensors[i]
+    const perimCoords = getPerimeterCoords(s, s.beaconDistance + 1)
+    console.log('sensor', i + 1, 'has', perimCoords.length, 'perim coords')
+    // console.time('sensor.' + i)
+    // console.timeEnd('sensor.' + i)
+    // don't need to check the current sensor, we know it's out of range
+    const otherSensors = [...g.sensors]
+    otherSensors.splice(i, 1)
+    for (const c of perimCoords) {
+      if (c.x > MAX_X || c.x < MIN_X || c.y > MAX_Y || c.y < MIN_Y) {
+        continue
+      }
+
+      const inRange = otherSensors.find(s => {
+        const d = manhatDist(s, c)
+        return d <= s.beaconDistance
+      })
+      if (!inRange) {
+        console.log(c, 'not in range of any sensors')
+        const x = c.x + g.min.x
+        const y = c.y + g.min.y
+        console.log(
+          'coord normalized',
+          'x=', x,
+          'y=', y,
+          'ans=' + (x * MAX + y)
+        )
+        return
+      }
+    }
+  }
 }
 
 // 4305253 also too low
