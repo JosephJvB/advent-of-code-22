@@ -1,5 +1,6 @@
 const fs = require('fs')
 
+// next time just use ints please ;)
 const days = [
   'one',
   'two',
