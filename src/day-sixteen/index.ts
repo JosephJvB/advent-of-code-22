@@ -9,6 +9,7 @@ import Valve from './valve'
 // if one step opens a valve, then next step in same check will think that valve is already open..? Idk I need to think about it
 // maybe it's OK
 // how can I program the case where I need to go back thru a visited valve room to get to a high prio valve?
+// i made a mess, I need help
 
 export default () => {
   const lines = fs.readFileSync(__dirname + '/data.txt', 'utf8').toString().split('\n')
@@ -20,17 +21,26 @@ export default () => {
     valveMap[v.id] = v
   }
   const startValve = valveMap.AA
-  const valves: Valve[] = [startValve]
+  let valves: Valve[] = [startValve]
   const visited: {
     [id: string]: boolean
+  } = {}
+  const open: {
+    [id: string]: boolean
+  } = {}
+  const connections: {
+    [ids: string]: boolean
   } = {}
   let totalPressureReleased = 0
   let sumOpenValvePressure = 0
   let minutes = 1
   const openedValves: string[] = []
   const route: string[] = []
+  let prevId = startValve.id
   while (minutes < 31) {
     const current = valves.shift()
+    const ids = `${prevId}-${current.id}`
+    connections[ids] = true
     visited[current.id] = true
     minutes++
     route.push(current.id)
@@ -40,8 +50,8 @@ export default () => {
       break
     }
     // open valve
-    if (!current.open && current.flowRate > 0) {
-      current.open = true
+    if (!open[current.id] && current.flowRate > 0) {
+      open[current.id] = true
       openedValves.push(current.id)
       sumOpenValvePressure += current.flowRate
       minutes++
@@ -51,20 +61,28 @@ export default () => {
     }
     // if all valves are open, just chill? otherwise go back and forth between rooms lol
     // but it's not an issue
+    const nextSteps: Valve[] = []
     for (const valveId of current.connectedValves) {
       const v = valveMap[valveId]
       // takes one minute to get to next step
-      valves.push(v)
+      nextSteps.push(v)
     }
     // should this take time into account?
-    valves.sort((a, z) => {
+    nextSteps.sort((a, z) => {
+      const aConn = connections[`${current.id}-${a.id}`]
+      const zConn = connections[`${current.id}-${z.id}`]
+      if (aConn != zConn) {
+        return !!aConn ? 1 : -1
+      }
       // sort closed to open
       if (visited[a.id] != visited[z.id]) {
-        return visited[a.id] ? 1 : -1
+        return !!visited[a.id] ? 1 : -1
       }
       // sort for pressure
       return z.flowRate - a.flowRate
     })
+    valves = nextSteps
+    prevId = current.id
   }
   console.log(
     'exit:\n',
