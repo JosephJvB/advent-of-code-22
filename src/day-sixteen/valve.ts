@@ -5,11 +5,10 @@ export default class Valve {
   connectedValves: string[]
   open = false
   step: number
-  visited = false
   constructor(inputStr: string) {
     const words = inputStr.split(' ')
     this.id = words[1]
     this.flowRate = parseInt(words[4].replace('rate=', '').replace(';', ''))
-    this.connectedValves = words.slice(9)
+    this.connectedValves = words.slice(9).map(w => w.replace(/,/g, ''))
   }
 }
