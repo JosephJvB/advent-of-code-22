@@ -14,11 +14,28 @@ export default class PathFinder {
   public addValve(v: Valve) {
     this.valveMap[v.id] = v
   }
-  public getValve(id: string) {
-    return this.valveMap[id]
-  }
-  public get startPoint() {
-    return this.valveMap.AA
+  public findPathRecursive(currentPos: string, toOpen: string[], timeLeft: number) {
+    let bestOption: string = null
+    let bestScore: number = 0
+    for (const dest of toOpen) {
+      const dist = this.getShortestDistance(currentPos, dest)
+      const nextTimeLeft = timeLeft - dist - 1
+      if (nextTimeLeft <= 0) { // ignore the option
+        continue
+      }
+      let score = nextTimeLeft * this.valveMap[dest].flowRate
+      const nextOpen = toOpen.filter(id => id != dest)
+      const next = this.findPathRecursive(dest, nextOpen, nextTimeLeft)
+      score += next.score
+      if (score > bestScore) {
+        bestOption = dest
+        bestScore = score
+      }
+    }
+    return {
+      option: bestOption,
+      score: bestScore,
+    }
   }
   // precompute all distances
   public setDistances() {
@@ -59,5 +76,8 @@ export default class PathFinder {
     }
     console.error('failed to map from', src, 'to', dest)
     process.exit()
+  }
+  public getValve(id: string) {
+    return this.valveMap[id]
   }
 }

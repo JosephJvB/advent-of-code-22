@@ -38,13 +38,13 @@ const nextOptimalValve = (currValve, timeLeft, contesters) => {
     let newTime = timeLeft - dist - 1;
     if (newTime <= 0) continue;
     let score = newTime * tunnelMap.get(contester).flowRate;
-    let optimal = nextOptimalValve(contester, newTime, newContesters);
     if (currValve == 'AA' && contester == 'DD') {
-      console.log('AA', 'DD', newTime, dist, optimal.value)
+      console.log('AA', 'DD', newTime, dist, score)
     }
     if (currValve == 'AA' && contester == 'JJ') {
-      console.log('AA', 'JJ', newTime, dist, optimal.value)
+      console.log('AA', 'JJ', newTime, dist, score)
     }
+    let optimal = nextOptimalValve(contester, newTime, newContesters);
     score += optimal.value;
 
     if (score > value) {
