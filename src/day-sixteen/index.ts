@@ -2,15 +2,7 @@ import fs from 'fs'
 import PathFinder from './pathFinder'
 import Valve from './valve'
 
-// kinda sounds like djikstras again
-// shortest path
-// from each step, add all next steps
-// sort steps based flowRate?
-// i think steps need to impliment valve, not store valve reference
-// if one step opens a valve, then next step in same check will think that valve is already open..? Idk I need to think about it
-// maybe it's OK
-// how can I program the case where I need to go back thru a visited valve room to get to a high prio valve?
-// i made a mess, I need help
+const MAX_TIME = 30
 
 export default () => {
   // test()
@@ -27,25 +19,33 @@ function run () {
       toOpen.push(v.id)
     }
   }
+  pathFinder.setDistances()
   let totalPressureReleased = 0
   let sumOpenValvePressure = 0
-  let minutes = 30
+  let minutesPassed = 0
   let currentPos = pathFinder.startPoint
   const openedValves: string[] = []
 
-  while (minutes > 0) {
+  // case where AA has flowRate
+  if (currentPos.flowRate > 0) {
+    toOpen = toOpen.filter(id => id != currentPos.id)
+    minutesPassed++
+    sumOpenValvePressure += currentPos.flowRate
+  }
+
+  while (minutesPassed < MAX_TIME) {
     if (!toOpen.length) {
       // wait till end
-      console.log('waiting')
+      // console.log('waiting')
       totalPressureReleased += sumOpenValvePressure
-      minutes--
+      minutesPassed++
       continue
     }
     // find best valve to open next
     const options = toOpen.map(id => {
       const dest = pathFinder.getValve(id)
       const steps = pathFinder.getShortestDistance(currentPos.id, dest.id)
-      let minsOpen = minutes - steps
+      let minsOpen = MAX_TIME - minutesPassed - steps
       minsOpen-- // open the valve
       if (minsOpen < 0) minsOpen = 0
       // how much pressure the valve will release once opened
@@ -57,7 +57,7 @@ function run () {
       }
     })
     options.sort((a, z) => z.prio - a.prio)
-    console.log('@', currentPos.id, minutes, totalPressureReleased)
+    console.log('@', currentPos.id, minutesPassed, totalPressureReleased)
     console.log(options.map(o => `${o.valve.id}:${o.prio}:${o.steps}`))
     const nextDest = options[0].valve
     console.log('->', nextDest.id)
@@ -69,27 +69,28 @@ function run () {
     steps.sort((a, z) => a - z)
     const shortestSteps = steps[0]
     // Get to next valve
+    // in case we don't make it to next room, dont add all those minutes
     let nextDistance = shortestSteps
-    if (nextDistance > minutes) {
-      nextDistance = minutes
+    if ((nextDistance + minutesPassed) > MAX_TIME) {
+      nextDistance = MAX_TIME - minutesPassed
     }
     totalPressureReleased += (sumOpenValvePressure * nextDistance)
-    minutes -= nextDistance
-    if (minutes <= 0) { // didn't make it to the next room
+    minutesPassed += nextDistance
+    if (minutesPassed >= MAX_TIME) { // didn't make it to the next room
       console.log('exit during travel')
       break
     }
     // arrive at next dest
     currentPos = nextDest
     // open the valve
-    minutes--
+    minutesPassed++
     // update valve as open
     toOpen = toOpen.filter(id => id != nextDest.id)
     openedValves.push(nextDest.id)
     sumOpenValvePressure += nextDest.flowRate
   }
   console.log('done')
-  console.log('minutes', minutes)
+  console.log('minutes', minutesPassed)
   console.log('totalPressureReleased', totalPressureReleased)
   console.log('sumOpenValvePressure', sumOpenValvePressure)
   console.log('openedValves', openedValves)
@@ -101,6 +102,11 @@ function test() {
     const v = new Valve(l)
     pathFinder.addValve(v)
   }
-  console.log('AA-BB', pathFinder.getShortestDistance('AA', 'BB'))
-  console.log('DD-AA', pathFinder.getShortestDistance('DD', 'AA'))
+  const aadd = pathFinder.getShortestDistance('AA', 'DD')
+  const aaddmins = 30 - aadd - 1
+  const aajj = pathFinder.getShortestDistance('AA', 'JJ')
+  const aajjmins = 30 - aajj - 1
+
+  console.log('AA-DD', aadd, aaddmins, pathFinder.getValve('DD').flowRate)
+  console.log('AA-JJ', aajj, aajjmins, pathFinder.getValve('JJ').flowRate)
 }

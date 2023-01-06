@@ -7,17 +7,39 @@ export default class PathFinder {
   private valveMap: {
     [id: string]: Valve
   } = {}
+  private distances: {
+    [id: string]: number
+  } = {}
   constructor() {}
-  addValve(v: Valve) {
+  public addValve(v: Valve) {
     this.valveMap[v.id] = v
   }
-  getValve(id: string) {
+  public getValve(id: string) {
     return this.valveMap[id]
   }
-  get startPoint() {
+  public get startPoint() {
     return this.valveMap.AA
   }
-  getShortestDistance(src: string, dest: string) {
+  // precompute all distances
+  public setDistances() {
+    const list = Object.keys(this.valveMap).map(id => this.valveMap[id])
+    for (let i = 0; i < list.length; i++) {
+      const src = list[i]
+      const rest = list.slice(i + 1)
+      for (let r = 0; r < rest.length; r++) {
+        const dest = rest[r]
+        const ids = [src.id, dest.id]
+        ids.sort()
+        this.distances[ids.join(',')] = this.computeShortestDistance(src.id, dest.id)
+      }
+    }
+  }
+  public getShortestDistance(src: string, dest: string) {
+    const ids = [src, dest]
+    ids.sort()
+    return this.distances[ids.join(',')]
+  }
+  private computeShortestDistance(src: string, dest: string) {
     const steps: Step[] = [new Step(this.valveMap[src], 0)]
     const visited: {
       [id: string]: boolean
