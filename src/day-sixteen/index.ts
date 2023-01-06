@@ -1,4 +1,5 @@
 import fs from 'fs'
+import PathFinder from './pathFinder'
 import Valve from './valve'
 
 // kinda sounds like djikstras again
@@ -12,96 +13,94 @@ import Valve from './valve'
 // i made a mess, I need help
 
 export default () => {
+  // test()
+  run()
+}
+function run () {
   const lines = fs.readFileSync(__dirname + '/data.txt', 'utf8').toString().split('\n')
-  const valveMap: {
-    [id: string]: Valve
-  } = {}
+  let toOpen: string[] = []
+  const pathFinder = new PathFinder()
   for (const l of lines) {
     const v = new Valve(l)
-    valveMap[v.id] = v
+    pathFinder.addValve(v)
+    if (v.flowRate > 0) {
+      toOpen.push(v.id)
+    }
   }
-  const startValve = valveMap.AA
-  let valves: Valve[] = [startValve]
-  const visited: {
-    [id: string]: boolean
-  } = {}
-  const open: {
-    [id: string]: boolean
-  } = {}
-  const connections: {
-    [ids: string]: boolean
-  } = {}
   let totalPressureReleased = 0
   let sumOpenValvePressure = 0
-  let minutes = 1
+  let minutes = 30
+  let currentPos = pathFinder.startPoint
   const openedValves: string[] = []
-  const route: string[] = []
-  let prevId = startValve.id
-  while (minutes < 31) {
-    const current = valves.shift()
-    const ids = `${prevId}-${current.id}`
-    connections[ids] = true
-    visited[current.id] = true
-    minutes++
-    route.push(current.id)
-    // release current openValves
-    totalPressureReleased += sumOpenValvePressure
-    if (minutes == 31) {
-      break
+
+  while (minutes > 0) {
+    if (!toOpen.length) {
+      // wait till end
+      console.log('waiting')
+      totalPressureReleased += sumOpenValvePressure
+      minutes--
+      continue
     }
-    // open valve
-    if (!open[current.id] && current.flowRate > 0) {
-      open[current.id] = true
-      openedValves.push(current.id)
-      sumOpenValvePressure += current.flowRate
-      minutes++
-    }
-    if (minutes == 31) {
-      break
-    }
-    // if all valves are open, just chill? otherwise go back and forth between rooms lol
-    // but it's not an issue
-    const nextSteps: Valve[] = []
-    for (const valveId of current.connectedValves) {
-      const v = valveMap[valveId]
-      // takes one minute to get to next step
-      nextSteps.push(v)
-    }
-    // should this take time into account?
-    nextSteps.sort((a, z) => {
-      const aConn = connections[`${current.id}-${a.id}`]
-      const zConn = connections[`${current.id}-${z.id}`]
-      if (aConn != zConn) {
-        return !!aConn ? 1 : -1
+    // find best valve to open next
+    const options = toOpen.map(id => {
+      const dest = pathFinder.getValve(id)
+      const steps = pathFinder.getShortestDistance(currentPos.id, dest.id)
+      let minsOpen = minutes - steps
+      minsOpen-- // open the valve
+      if (minsOpen < 0) minsOpen = 0
+      // how much pressure the valve will release once opened
+      const pressureAfterOpen = minsOpen * dest.flowRate
+      return {
+        valve: dest,
+        steps,
+        prio: pressureAfterOpen
       }
-      // sort closed to open
-      if (visited[a.id] != visited[z.id]) {
-        return !!visited[a.id] ? 1 : -1
-      }
-      // sort for pressure
-      return z.flowRate - a.flowRate
     })
-    valves = nextSteps
-    prevId = current.id
+    options.sort((a, z) => z.prio - a.prio)
+    console.log('@', currentPos.id, minutes, totalPressureReleased)
+    console.log(options.map(o => `${o.valve.id}:${o.prio}:${o.steps}`))
+    const nextDest = options[0].valve
+    console.log('->', nextDest.id)
+
+    // find best path to next valve
+    const steps = currentPos.connectedValves.map(id => {
+      return pathFinder.getShortestDistance(id, nextDest.id)
+    })
+    steps.sort((a, z) => a - z)
+    const shortestSteps = steps[0]
+    // Get to next valve
+    let nextDistance = shortestSteps
+    if (nextDistance > minutes) {
+      nextDistance = minutes
+    }
+    totalPressureReleased += (sumOpenValvePressure * nextDistance)
+    minutes -= nextDistance
+    if (minutes <= 0) { // didn't make it to the next room
+      console.log('exit during travel')
+      break
+    }
+    // arrive at next dest
+    currentPos = nextDest
+    // open the valve
+    minutes--
+    // update valve as open
+    toOpen = toOpen.filter(id => id != nextDest.id)
+    openedValves.push(nextDest.id)
+    sumOpenValvePressure += nextDest.flowRate
   }
-  console.log(
-    'exit:\n',
-    'minutes', minutes, '\n',
-    'totalPressureReleased', totalPressureReleased, '\n',
-    'openedValves', openedValves,
-    'sumOpenValvePressure', sumOpenValvePressure, '\n',
-    'route', route, '\n',
-  )
+  console.log('done')
+  console.log('minutes', minutes)
+  console.log('totalPressureReleased', totalPressureReleased)
+  console.log('sumOpenValvePressure', sumOpenValvePressure)
+  console.log('openedValves', openedValves)
 }
-// exit:
-//  minutes 31
-//  totalPressureReleased 1476
-//  openedValves [ 'DD', 'BB', 'EE', 'CC', 'JJ', 'HH' ] sumOpenValvePressure 81
-//  route [
-//   'AA', 'DD', 'BB', 'EE',
-//   'CC', 'II', 'JJ', 'FF',
-//   'GG', 'HH', 'DD', 'DD', -- this looks like a bug? Went from DD -> DD. Must have happened from Sort
-//   'BB', 'EE', 'DD', 'EE',
-//   'DD', 'EE', 'DD', 'EE',
-//   'DD', 'EE', 'DD', 'EE'
-// ]
+function test() {
+  const lines = fs.readFileSync(__dirname + '/data.txt', 'utf8').toString().split('\n')
+  const pathFinder = new PathFinder()
+  for (const l of lines) {
+    const v = new Valve(l)
+    pathFinder.addValve(v)
+  }
+  console.log('AA-BB', pathFinder.getShortestDistance('AA', 'BB'))
+  console.log('DD-AA', pathFinder.getShortestDistance('DD', 'AA'))
+}

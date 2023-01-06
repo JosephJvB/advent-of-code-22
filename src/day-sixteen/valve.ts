@@ -3,7 +3,6 @@ export default class Valve {
   id: string
   flowRate: number
   connectedValves: string[]
-  step: number
   constructor(inputStr: string) {
     const words = inputStr.split(' ')
     this.id = words[1]
