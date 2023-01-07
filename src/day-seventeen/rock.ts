@@ -8,6 +8,7 @@ export default class Rock {
   topEdge: number[] = [] // list of y coords, index is xcoord
   leftEdge: number[] = [] // list of x coords, index is rowNum
   rightEdge: number[] = [] // list of x coords, index is rowNum
+  // get y from rowNum by y = this.height - 1 (last row) - rowNum
   private jets: jetDirection[] = []
   constructor(lines: string[], public y: number, public i: number) {
     this.height = lines.length
@@ -111,8 +112,8 @@ export default class Rock {
     }
     for (let r = 0; r < edge.length; r++) {
       const y = this.height - 1 - r
-      const rx = edge[r]
-      const c = `${x + rx},${y + this.y}`
+      const edgeX = edge[r]
+      const c = `${x + edgeX},${y + this.y}`
       // rock with updated x value will overlap settled rock
       if (tower[c]) {
         // console.log(this.i, j, 'collide', c)
