@@ -18,7 +18,7 @@ export default () => {
     [coord: string]: boolean
   } = {}
   let jIdx = 0
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < TOTAL_ROCKS; i++) {
     const rIdx = i % rocks.length
     const r = new Rock(rocks[rIdx], towerHeight + 3, i)
     // don't need to check landed on first few - cos rock starts 3 above always
@@ -43,7 +43,7 @@ export default () => {
     }
   }
   drawGrid(settledRocks)
-  console.log(Object.keys(settledRocks))
+  // console.log(Object.keys(settledRocks))
   console.log('final towerHeight', towerHeight)
 }
 

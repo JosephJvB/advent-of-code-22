@@ -70,14 +70,14 @@ export default class Rock {
       const y = this.bottomEdge[x] + this.y
       if (y == 0) { // reached bottom
         // console.log('rock hit floor @', x, y)
-        console.log(this.i, 'hit floor', this.jets.join(''))
+        // console.log(this.i, 'hit floor', this.jets.join(''))
         return true
       }
       // tower has a rock one cell below current bottom edge
       const c = `${x + this.x},${y - 1}`
       if (tower[c]) {
         // console.log('rock hit tower @', x, y)
-        console.log(this.i, 'hit rock', this.jets.join(''), c)
+        // console.log(this.i, 'hit rock', this.jets.join(''), c)
         return true
       }
     }
@@ -100,23 +100,25 @@ export default class Rock {
       return
     }
     // check other rocks
-    // let edge: number[] = []
-    // switch (j) {
-    //   case '<':
-    //     edge = this.leftEdge
-    //     break
-    //   case '>':
-    //     edge = this.rightEdge
-    //     break
-    // }
-    // for (let r = 0; r < edge.length; r++) {
-    //   const y = this.height - 1 - r
-    //   const c = `${x},${y}`
-    //   // rock with updated x value will overlap settled rock
-    //   if (tower[c]) {
-    //     return
-    //   }
-    // }
+    let edge: number[] = []
+    switch (j) {
+      case '<':
+        edge = this.leftEdge
+        break
+      case '>':
+        edge = this.rightEdge
+        break
+    }
+    for (let r = 0; r < edge.length; r++) {
+      const y = this.height - 1 - r
+      const rx = edge[r]
+      const c = `${x + rx},${y + this.y}`
+      // rock with updated x value will overlap settled rock
+      if (tower[c]) {
+        // console.log(this.i, j, 'collide', c)
+        return
+      }
+    }
     this.x = x
   }
 }
