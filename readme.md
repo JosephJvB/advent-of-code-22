@@ -16,3 +16,5 @@ I guess what I learned is to use parseInt / typeof == 'number'
 
 codepen js solutions
 https://codepen.io/ivanr3d/pen/ExRrXzG
+
+next time, don't do any fancy copying files to dist/ dir, just write filepath to original
