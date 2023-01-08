@@ -15,7 +15,7 @@ const TOTAL_ROCKS = 2022
 export default () => {
   const jets: jetDirection[] = fs.readFileSync(__dirname + '/jets.txt', 'utf-8').toString()
     .split('') as jetDirection[]
-  const rocks = fs.readFileSync(__dirname + '/data.txt', 'utf-8').toString()
+  const rocks = fs.readFileSync(__dirname + '/rocks.txt', 'utf-8').toString()
     .split('\n\n').map(str => str.split('\n'))
   let towerHeight = 0
   let settledRocks: Tower = {}

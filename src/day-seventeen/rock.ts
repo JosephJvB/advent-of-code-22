@@ -22,13 +22,14 @@ export default class Rock {
     for (let r = 0; r < this.height; r++) {
       const row = lines[r]
       const y = this.height - 1 - r // invert y value
+      // better width check
+      if (row.length > this.width) {
+        this.width = row.length
+      }
       for (let x = 0; x < row.length; x++) {
         const cell = row[x]
         if (cell != '#') {
           continue
-        }
-        if (x >= this.width) {
-          this.width = x + 1
         }
         // top - only accept first cell
         if (isNaN(this.topEdge[x])) {
