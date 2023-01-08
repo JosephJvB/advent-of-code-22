@@ -6,21 +6,23 @@ import Rock from './rock'
 // otherwise all settled rocks y index's have to change as tower grows
 
 export type jetDirection = '>' | '<'
-const jets: jetDirection[] = '>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>'.split('') as jetDirection[]
+export type Tower = {
+  [coord: string]: string
+}
 const WIDTH = 7
 const TOTAL_ROCKS = 2022
 
 export default () => {
+  const jets: jetDirection[] = fs.readFileSync(__dirname + '/jets.txt', 'utf-8').toString()
+    .split('') as jetDirection[]
   const rocks = fs.readFileSync(__dirname + '/data.txt', 'utf-8').toString()
     .split('\n\n').map(str => str.split('\n'))
   let towerHeight = 0
-  let settledRocks: {
-    [coord: string]: boolean
-  } = {}
+  let settledRocks: Tower = {}
   let jIdx = 0
   for (let i = 0; i < TOTAL_ROCKS; i++) {
     const rIdx = i % rocks.length
-    const r = new Rock(rocks[rIdx], towerHeight + 3, i)
+    const r = new Rock(rocks[rIdx], towerHeight + 3, i, rIdx)
     // don't need to check landed on first few - cos rock starts 3 above always
     // perf improve opp.
     while (true) {
@@ -33,7 +35,7 @@ export default () => {
       let landed = r.hasLanded(settledRocks)
       if (landed) {
         for (const coord in r.edges) {
-          settledRocks[coord] = true
+          settledRocks[coord] = r.char
         }
         towerHeight = Math.max(r.y + r.height, towerHeight)
         break
@@ -44,13 +46,17 @@ export default () => {
   }
   drawGrid(settledRocks)
   // console.log(Object.keys(settledRocks))
+  fs.writeFileSync(
+    __dirname + '/../../src/day-seventeen/working/coords.json',
+    JSON.stringify(Object.keys(settledRocks), null, 2)
+  )
   console.log('final towerHeight', towerHeight)
 }
 
-function drawGrid(rocks: { [coord: string]: boolean }) {
+function drawGrid(tower: Tower) {
   let Y = 0
   let X = 6
-  for (let coord in rocks) {
+  for (let coord in tower) {
     const [x, y] = coord.split(',').map(s => parseInt(s))
     Y = Math.max(Y, y)
   }
@@ -59,8 +65,8 @@ function drawGrid(rocks: { [coord: string]: boolean }) {
     const row = []
     for (let x = 0; x <= X; x++) {
       const c = `${x},${y}`
-      if (rocks[c]) {
-        row.push('#')
+      if (tower[c]) {
+        row.push(tower[c])
       } else {
         row.push('.')
       }

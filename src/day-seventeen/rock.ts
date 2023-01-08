@@ -1,4 +1,4 @@
-import { jetDirection } from '.'
+import { jetDirection, Tower } from '.'
 
 export default class Rock {
   height: number
@@ -10,7 +10,12 @@ export default class Rock {
   rightEdge: number[] = [] // list of x coords, index is rowNum
   // get y from rowNum by y = this.height - 1 (last row) - rowNum
   private jets: jetDirection[] = []
-  constructor(lines: string[], public y: number, public i: number) {
+  constructor(
+    lines: string[],
+    public y: number,
+    public i: number,
+    public rIdx: number
+  ) {
     this.height = lines.length
     this.width = 0
     // loop from top left to bottom right
@@ -66,7 +71,7 @@ export default class Rock {
     }
     return edges
   }
-  hasLanded(tower: { [coord: string]: boolean }) {
+  hasLanded(tower: Tower) {
     for (let x = 0; x < this.bottomEdge.length; x++) {
       const y = this.bottomEdge[x] + this.y
       if (y == 0) { // reached bottom
@@ -76,7 +81,7 @@ export default class Rock {
       }
       // tower has a rock one cell below current bottom edge
       const c = `${x + this.x},${y - 1}`
-      if (tower[c]) {
+      if (!!tower[c]) {
         // console.log('rock hit tower @', x, y)
         // console.log(this.i, 'hit rock', this.jets.join(''), c)
         return true
@@ -84,7 +89,7 @@ export default class Rock {
     }
     return false
   }
-  moveByJet(j: jetDirection, tower: { [coord: string]: boolean }) {
+  moveByJet(j: jetDirection, tower: Tower) {
     this.jets.push(j)
     let x = this.x
     switch (j) {
@@ -115,11 +120,25 @@ export default class Rock {
       const edgeX = edge[r]
       const c = `${x + edgeX},${y + this.y}`
       // rock with updated x value will overlap settled rock
-      if (tower[c]) {
+      if (!!tower[c]) {
         // console.log(this.i, j, 'collide', c)
         return
       }
     }
     this.x = x
+  }
+  get char() {
+    switch (this.rIdx) {
+      case 0:
+        return '#'
+      case 1:
+        return '@'
+      case 2:
+        return '$'
+      case 3:
+        return '%'
+      case 4:
+        return '&'
+    }
   }
 }
