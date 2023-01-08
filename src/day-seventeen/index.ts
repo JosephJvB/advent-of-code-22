@@ -46,10 +46,10 @@ export default () => {
   }
   drawGrid(settledRocks)
   // console.log(Object.keys(settledRocks))
-  fs.writeFileSync(
-    __dirname + '/../../src/day-seventeen/working/coords.json',
-    JSON.stringify(Object.keys(settledRocks), null, 2)
-  )
+  // fs.writeFileSync(
+  //   __dirname + '/../../src/day-seventeen/working/coords.json',
+  //   JSON.stringify(Object.keys(settledRocks), null, 2)
+  // )
   console.log('final towerHeight', towerHeight)
 }
 

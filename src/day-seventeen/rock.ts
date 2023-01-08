@@ -27,7 +27,7 @@ export default class Rock {
         if (cell != '#') {
           continue
         }
-        if (x > this.width) {
+        if (x >= this.width) {
           this.width = x + 1
         }
         // top - only accept first cell
